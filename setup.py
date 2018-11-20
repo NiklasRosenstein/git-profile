@@ -15,16 +15,15 @@ setuptools.setup(
   long_description_content_type = 'text/markdown',
   url = 'https://github.com/NiklasRosenstein/python-nr/tree/master/nr.git-profile',
   license = 'MIT',
-  namespace_packages = ['nr'],
   packages = setuptools.find_packages('src'),
   package_dir = {'': 'src'},
   namespace_packages = ['nr'],
   install_requires = [
     'nr.types>=1.1.1',
-    'six>=1.11.0',
+    'six>=1.11.0'
   ],
   entry_points = {
-    'nr.cli:commands': [
+    'nr.cli.commands': [
       'git-profile = nr.git_profile:main'
     ]
   }

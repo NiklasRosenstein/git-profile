@@ -14,7 +14,7 @@ import inspect
 import abc
 import os
 import sys
-from py3 import PY3
+from six import PY3, string_types, text_type
 
 # from git.odict import OrderedDict
 try:
@@ -22,8 +22,6 @@ try:
 except ImportError:
     from ordereddict import OrderedDict
 
-# from git.compat import force_text,string_types
-from gitdb.utils.encoding import force_text, string_types
 
 __all__ = ('GitConfigParser', 'SectionConstraint')
 
@@ -613,3 +611,16 @@ Assures added options will stay in order"""
             self.set(new_name, k, self._value_to_string(v))
         self.remove_section(section)
         return self
+
+
+def force_text(data, encoding="utf-8"):
+    if isinstance(data, text_type):
+        return data
+
+    if isinstance(data, bytes):
+        return data.decode(encoding)
+
+    if PY3:
+        return text_type(data, encoding)
+    else:
+        return text_type(data)

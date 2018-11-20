@@ -27,7 +27,7 @@ write them to the current repository.
 """
 
 from __future__ import print_function
-from gitconfigparser import GitConfigParser
+from ._vendor.gitconfigparser import GitConfigParser
 from nr.types.record import Record
 from six.moves import configparser
 
