@@ -156,7 +156,7 @@ def main(argv=None, prog=None):
   current_profile = local_config.get_value('profile', 'current', 'default')
 
   if not args.profile:
-    for x in sorted(profiles, key=str.lower):
+    for x in sorted(profiles, key=lambda x: x.lower()):
       print('*' if x == current_profile else ' ', x)
     return 0
   else:
