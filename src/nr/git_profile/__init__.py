@@ -28,7 +28,7 @@ write them to the current repository.
 
 from __future__ import print_function
 from ._vendor.gitconfigparser import GitConfigParser
-from nr.types.record import Record
+from nr.types.record import create_record
 from six.moves import configparser
 
 try: from shlex import quote
@@ -42,7 +42,7 @@ import json
 import base64
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 
 def git(*args):
@@ -63,11 +63,7 @@ def find_git_dir():
 
 class Changeset(object):
 
-  class Change(Record):
-    __slots__ = 'type,section,key,value'.split(',')
-
-    def to_json(self):
-      return {k: getattr(self, k) for k in self.__slots__}
+  Change = create_record('Change', 'type section key value')
 
   NEW = 'NEW'  # No value
   SET = 'SET'  # Contains previous value
@@ -83,6 +79,9 @@ class Changeset(object):
 
   def __init__(self, changes=None):
     self.changes = changes or []
+
+  def __repr__(self):
+    return 'Changeset({!r})'.format(self.changes)
 
   def to_b64(self):
     return base64.b64encode(json.dumps(self.to_json()).encode('utf8'))
