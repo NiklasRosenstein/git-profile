@@ -1,12 +1,12 @@
-# nr.git-profile
+# git-profile
 
 A tiny command-line tool that allows you to override local repository
-settings by enabling a profile.
+settings by switching profilef.
 
-    $ nr git-profile
-    * none
+    $ git profile
+    * default
       Work
-    $ nr git-profile Work
+    $ git profile Work
     Switched to profile "Work".
 
 A profile can be created simply by adding the name of the profile to one
@@ -18,7 +18,7 @@ or more sections that should be overwritten when the profile is activated.
 
 To revert the changes that a profile applied, simply do
 
-    $ nr git-profile none
+    $ git profile default
 
 I recommend creating an alias in your `.gitconfig` so that you can write
 `git profile` instead of `nr git-profile`.
