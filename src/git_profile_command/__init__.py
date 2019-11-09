@@ -28,7 +28,7 @@ write them to the current repository.
 
 from __future__ import print_function
 from ._vendor.gitconfigparser import GitConfigParser
-from nr.types.record import create_record
+from nr.types.structured import Field, ToJSON, create_object_class
 from six.moves import configparser
 
 try: from shlex import quote
@@ -63,7 +63,10 @@ def find_git_dir():
 
 class Changeset(object):
 
-  Change = create_record('Change', 'type section key value')
+  Change = create_object_class(
+    'Change',
+    [Field(object, name=x) for x in ['type', 'section', 'key', 'value']],
+    mixins=(ToJSON,))
 
   NEW = 'NEW'  # No value
   SET = 'SET'  # Contains previous value
@@ -143,7 +146,7 @@ def main(argv=None, prog=None):
   args = parser.parse_args(argv)
 
   global_config = GitConfigParser(os.path.expanduser('~/.gitconfig'))
-  profiles = set(x.split('.')[0] for x in global_config.sections() if '.' in x)
+  profiles = set(x.split('.')[0] for x in global_config.sections() if '.' in x and ' ' not in x)
   profiles.add('default')
 
   git_dir = find_git_dir()
@@ -179,6 +182,7 @@ def main(argv=None, prog=None):
       changes.set(local_config, 'profile', 'current', args.profile)
       changes.set(local_config, 'profile', 'changeset', changes.to_b64())
     local_config.write()
+    del local_config
 
     print('Switched to profile "{}".'.format(args.profile))
     return 0

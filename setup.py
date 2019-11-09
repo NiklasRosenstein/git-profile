@@ -21,7 +21,7 @@ setuptools.setup(
   license = 'MIT',
   packages = setuptools.find_packages('src'),
   package_dir = {'': 'src'},
-  install_requires = ['nr.types>=2.0.0', 'six>=1.11.0'],
+  install_requires = ['nr.types>=3.0.0,<4.0.0', 'six>=1.11.0'],
   entry_points = {
     'console_scripts': [
       'git-profile = git_profile_command:main'
