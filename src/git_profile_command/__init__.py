@@ -53,7 +53,16 @@ def git(*args):
 def find_git_dir():
   directory = os.getcwd()
   prev = None
-  while not os.path.isdir(os.path.join(directory, '.git')):
+  while True:
+    path = os.path.join(directory, '.git')
+    if os.path.exists(path):
+      if os.path.isfile(path):
+        with open(path) as fp:
+          for line in fp:
+            if line.startswith('gitdir:'):
+              return line.replace('gitdir:', '').strip()
+        raise RuntimeError('unable to find gitdir in "{}"'.format(path))
+      return directory
     directory = os.path.dirname(directory)
     if directory == prev:
       return None
