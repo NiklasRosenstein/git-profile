@@ -62,7 +62,7 @@ def find_git_dir():
             if line.startswith('gitdir:'):
               return line.replace('gitdir:', '').strip()
         raise RuntimeError('unable to find gitdir in "{}"'.format(path))
-      return directory
+      return path
     directory = os.path.dirname(directory)
     if directory == prev:
       return None
@@ -163,7 +163,9 @@ def main(argv=None, prog=None):
     print('fatal: GIT_DIR not found', file=sys.stderr)
     return 1
 
-  local_config = GitConfigParser(os.path.join(git_dir, 'config'), read_only=False)
+  local_config_fn = os.path.join(git_dir, 'config')
+  assert os.path.isfile(local_config_fn), local_config_fn
+  local_config = GitConfigParser(local_config_fn, read_only=False)
   current_profile = local_config.get_value('profile', 'current', 'default')
 
   if not args.profile:
