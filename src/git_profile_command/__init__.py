@@ -28,7 +28,8 @@ write them to the current repository.
 
 from __future__ import print_function
 from ._vendor.gitconfigparser import GitConfigParser
-from nr.types.structured import Field, ToJSON, create_object_class
+from nr.databind.core import Field, make_struct
+from nr.databind.json import JsonMixin
 from six.moves import configparser
 
 try: from shlex import quote
@@ -72,10 +73,9 @@ def find_git_dir():
 
 class Changeset(object):
 
-  Change = create_object_class(
-    'Change',
+  Change = make_struct('Change',
     [Field(object, name=x) for x in ['type', 'section', 'key', 'value']],
-    mixins=(ToJSON,))
+    mixins=(JsonMixin,))
 
   NEW = 'NEW'  # No value
   SET = 'SET'  # Contains previous value

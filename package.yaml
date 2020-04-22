@@ -1,0 +1,15 @@
+name: "git-profile"
+modulename: "git_profile_command"
+version: "1.0.0"
+author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
+license: "MIT"
+url: "https://github.com/NiklasRosenstein/git-profile"
+description: "Easily switch between Git configurations on a per-repository basis."
+requirements:
+- python ^3.4
+- nr.databind.core ~0.0.6
+- nr.databind.json ~0.0.4
+- six ^1.11.0
+entrypoints:
+  console_scripts:
+  - git-profile = git_profile_command:main
