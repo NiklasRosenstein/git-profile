@@ -43,7 +43,7 @@ import json
 import base64
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 
 def git(*args):
