@@ -4,3 +4,7 @@ changes:
   component: general
   description: add `--diff` command-line option
   fixes: []
+- type: change
+  component: general
+  description: break Python 2 compatibility, requires Python 3.6+ now
+  fixes: []

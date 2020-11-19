@@ -7,7 +7,7 @@ license: MIT
 url: https://github.com/NiklasRosenstein/git-profile
 description: Easily switch between Git configurations on a per-repository basis.
 requirements:
-- python ^3.5
+- python ^3.6
 - databind.core ^0.7.0
 - databind.json ^0.6.1
 - nr.fs ^1.6.2
