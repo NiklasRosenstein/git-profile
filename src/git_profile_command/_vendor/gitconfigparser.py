@@ -1,26 +1,16 @@
 #!/usr/bin/env python
 # based on GitPython.config
-try:
-    import builtins  # python2.X
-except ImportError:
-    import __builtin__ as builtins  # python3+
+import builtins
 import re
-try:
-    import ConfigParser as cp
-except ImportError:
-    # PY3
-    import configparser as cp
+import configparser as cp
 import inspect
 import abc
 import os
 import sys
 from six import PY3, string_types, text_type
+from collections import OrderedDict
 
-# from git.odict import OrderedDict
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
+from builtins import open
 
 
 __all__ = ('GitConfigParser', 'SectionConstraint')
@@ -208,7 +198,7 @@ class SectionConstraint(object):
         if attr in self._valid_attrs_:
             return lambda *args, **kwargs: self._call_config(
                 attr, *args, **kwargs)
-        return super(SectionConstraint, self).__getattribute__(attr)
+        return super().__getattribute__(attr)
 
     def _call_config(self, method, *args, **kwargs):
         return getattr(self._config, method)(
@@ -222,8 +212,7 @@ class SectionConstraint(object):
         return self._config.release()
 
 
-class GitConfigParser(with_metaclass(
-        MetaParserBuilder, cp.RawConfigParser, object)):
+class GitConfigParser(cp.RawConfigParser, metaclass=MetaParserBuilder):
 
     t_lock = LockFile
     re_comment = re.compile('^\s*[#;]')
@@ -478,7 +467,7 @@ Do not transform options in any way when writing
             write_section(name, value)
 
     def items(self, section_name):
-        for k, v in super(GitConfigParser, self).items(section_name):
+        for k, v in super().items(section_name):
             if k != '__name__':
                 yield (k, v)
 
@@ -542,11 +531,6 @@ Set merge_includes=False to prevent this
                 self, method_name)
             raise IOError(msg)
 
-    def add_section(self, section):
-        """
-Assures added options will stay in order"""
-        return super(GitConfigParser, self).add_section(section)
-
     @property
     def read_only(self):
         return self._read_only
@@ -598,6 +582,7 @@ Assures added options will stay in order"""
         self.set(section, option, self._value_to_string(value))
         return self
 
+    @set_dirty_and_flush_changes
     def rename_section(self, section, new_name):
         if not self.has_section(section):
             raise ValueError("Source section '%s' doesn't exist" % section)
@@ -606,7 +591,7 @@ Assures added options will stay in order"""
                 "Destination section '%s' already exists" %
                 new_name)
 
-        super(GitConfigParser, self).add_section(new_name)
+        super().add_section(new_name)
         for k, v in self.items(section):
             self.set(new_name, k, self._value_to_string(v))
         self.remove_section(section)

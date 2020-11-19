@@ -26,21 +26,23 @@ profile will load configuration options from a Git configuration file and
 write them to the current repository.
 """
 
-from __future__ import print_function
-from ._vendor.gitconfigparser import GitConfigParser
-from nr.databind.core import Field, make_struct
-from nr.databind.json import JsonMixin
-from six.moves import configparser
-
-try: from shlex import quote
-except ImportError: from pipes import quote
-
 import argparse
+import base64
+import configparser
+import enum
+import json
 import os
 import subprocess
 import sys
-import json
-import base64
+import typing as t
+from pathlib import Path
+from shlex import quote
+
+import nr.fs
+from databind.core import datamodel, field
+from databind.json import from_json, to_json
+
+from ._vendor.gitconfigparser import GitConfigParser
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
 __version__ = '1.0.1'
@@ -71,60 +73,56 @@ def find_git_dir():
   return os.path.join(directory, '.git')
 
 
-class Changeset(object):
+@datamodel
+class Change:
+  type: 'ChangeType'
+  section: str
+  key: t.Optional[str]
+  value: t.Optional[str]
 
-  Change = make_struct('Change',
-    [Field(object, name=x) for x in ['type', 'section', 'key', 'value']],
-    mixins=(JsonMixin,))
 
-  NEW = 'NEW'  # No value
-  SET = 'SET'  # Contains previous value
-  DEL = 'DEL'  # Contains previous value
+class ChangeType(enum.Enum):
+  NEW = enum.auto()
+  SET = enum.auto()
+  DEL = enum.auto()
+
+
+@datamodel
+class Changeset:
+  changes: t.List[Change] = field(default_factory=list)
 
   @classmethod
-  def from_b64(cls, data):
-    return cls.from_json(json.loads(base64.b64decode(data).decode('utf8')))
+  def from_b64(cls, data: bytes) -> 'Changeset':
+    return from_json(Changeset, json.loads(base64.b64decode(data).decode('utf8')))
 
-  @classmethod
-  def from_json(cls, data):
-    return cls([cls.Change(**x) for x in data])
+  def to_b64(self) -> bytes:
+    return base64.b64encode(json.dumps(to_json(self)).encode('utf8'))
 
-  def __init__(self, changes=None):
-    self.changes = changes or []
-
-  def __repr__(self):
-    return 'Changeset({!r})'.format(self.changes)
-
-  def to_b64(self):
-    return base64.b64encode(json.dumps(self.to_json()).encode('utf8'))
-
-  def to_json(self):
-    return [x.to_json() for x in self.changes]
-
-  def revert(self, config):
+  def revert(self, config: configparser.RawConfigParser) -> None:
     for change in reversed(self.changes):
-      if change.type == self.NEW:
+      if change.type == ChangeType.NEW:
         if change.key is None:
           config.remove_section(change.section)
         else:
           config.remove_option(change.section, change.key)
-      elif change.type == self.SET or change.type == self.DEL:
+      elif change.type == ChangeType.SET or change.type == ChangeType.DEL:
+        assert change.section and change.key and change.value, change
         config.set(change.section, change.key, change.value)
       else:
         raise RuntimeError('unexpected Change.type: {!r}'.format(change))
 
-  def set(self, config, section, key, value):
+  def set(self, config: configparser.RawConfigParser, section: str, key: str, value: str) -> None:
     if not config.has_section(section):
       config.add_section(section)
-      self.changes.append(self.Change(self.NEW, section, None, None))
+      self.changes.append(Change(ChangeType.NEW, section, None, None))
     if not config.has_option(section, key):
-      self.changes.append(self.Change(self.NEW, section, key, None))
+      self.changes.append(Change(ChangeType.NEW, section, key, None))
     else:
-      self.changes.append(self.Change(self.SET, section, key, config.get(section, key)))
+      self.changes.append(Change(ChangeType.SET, section, key, config.get(section, key)))
     config.set(section, key, value)
 
 
-class MergeReadConfig(object):
+class MergeReadConfig:
 
   def __init__(self, configs):
     self.configs = configs
@@ -144,14 +142,10 @@ class MergeReadConfig(object):
     raise configparser.NoOptionError((section, option))
 
 
-def get_argument_parser(prog=None):
+def main(argv: t.Optional[t.List[str]] = None, prog: t.Optional[str] = None) -> int:
   parser = argparse.ArgumentParser(prog=prog)
   parser.add_argument('profile', nargs='?', help='The name of the profile to use.')
-  return parser
-
-
-def main(argv=None, prog=None):
-  parser = get_argument_parser(prog)
+  parser.add_argument('-d', '--diff', action='store_true', help='Print the config diff.')
   args = parser.parse_args(argv)
 
   global_config = GitConfigParser(os.path.expanduser('~/.gitconfig'))
@@ -167,6 +161,7 @@ def main(argv=None, prog=None):
   assert os.path.isfile(local_config_fn), local_config_fn
   local_config = GitConfigParser(local_config_fn, read_only=False)
   current_profile = local_config.get_value('profile', 'current', 'default')
+  current_config_text = Path(local_config_fn).read_text()
 
   if not args.profile:
     for x in sorted(profiles, key=lambda x: x.lower()):
@@ -178,10 +173,10 @@ def main(argv=None, prog=None):
       return 1
 
     config = MergeReadConfig([local_config, global_config])
-    changeset = local_config.get_value('profile', 'changeset', '')
+    changeset: str = local_config.get_value('profile', 'changeset', '')
     if changeset:
-      changes = Changeset.from_b64(changeset)
-      changes.revert(config)
+      changes = Changeset.from_b64(changeset.encode('ascii'))
+      changes.revert(config)  # type: ignore
 
     if args.profile != 'default':
       changes = Changeset()
@@ -189,11 +184,20 @@ def main(argv=None, prog=None):
         if section.startswith(args.profile + '.'):
           key = section.split('.', 1)[1]
           for opt in global_config.options(section):
-            changes.set(config, key, opt, global_config.get(section, opt))
+            changes.set(config, key, opt, global_config.get(section, opt))  # type: ignore
       changes.set(local_config, 'profile', 'current', args.profile)
-      changes.set(local_config, 'profile', 'changeset', changes.to_b64())
+      changes.set(local_config, 'profile', 'changeset', changes.to_b64().decode('ascii'))
+
     local_config.write()
     del local_config
+
+    if args.diff and Path(local_config_fn).read_text() != current_config_text:
+      with nr.fs.tempfile('_old', text=True) as a:
+        a.write(current_config_text)
+        a.close()
+        print()
+        subprocess.call(['git', 'diff', '--no-index', a.name, local_config_fn])
+        print()
 
     print('Switched to profile "{}".'.format(args.profile))
     return 0
