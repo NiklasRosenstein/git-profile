@@ -23,7 +23,7 @@ requirements = [
 
 setuptools.setup(
   name = 'git-profile',
-  version = '1.1.0',
+  version = '1.1.1',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Easily switch between Git configurations on a per-repository basis.',
