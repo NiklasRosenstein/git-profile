@@ -29,7 +29,7 @@ setuptools.setup(
   description = 'Easily switch between Git configurations on a per-repository basis.',
   long_description = long_description,
   long_description_content_type = 'text/markdown',
-  url = 'https://github.com/NiklasRosenstein/git-profile',
+  url = 'https://git.niklasrosenstein.com/tooling/git-profile',
   license = 'MIT',
   packages = setuptools.find_packages('src', ['test', 'test.*', 'tests', 'tests.*', 'docs', 'docs.*']),
   package_dir = {'': 'src'},

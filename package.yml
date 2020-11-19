@@ -4,7 +4,7 @@ author: Niklas Rosenstein <rosensteinniklas@gmail.com>
 modulename: git_profile_command
 author: Niklas Rosenstein <rosensteinniklas@gmail.com>
 license: MIT
-url: https://github.com/NiklasRosenstein/git-profile
+url: https://git.niklasrosenstein.com/tooling/git-profile
 description: Easily switch between Git configurations on a per-repository basis.
 requirements:
 - python ^3.6
