@@ -45,7 +45,7 @@ from databind.json import from_json, to_json
 from ._vendor.gitconfigparser import GitConfigParser
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 
 def git(*args):
