@@ -93,10 +93,10 @@ class Changeset:
 
   @classmethod
   def from_b64(cls, data: bytes) -> 'Changeset':
-    return from_json(Changeset, json.loads(base64.b64decode(data).decode('utf8')))
+    return Changeset(from_json(t.List[Change], json.loads(base64.b64decode(data).decode('utf8'))))
 
   def to_b64(self) -> bytes:
-    return base64.b64encode(json.dumps(to_json(self)).encode('utf8'))
+    return base64.b64encode(json.dumps(to_json(self.changes, t.List[Change])).encode('utf8'))
 
   def revert(self, config: configparser.RawConfigParser) -> None:
     for change in reversed(self.changes):
