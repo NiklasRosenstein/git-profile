@@ -7,6 +7,7 @@ authors = [
 ]
 dependencies = [
     "databind>=4.5.2",
+    "six>=1.17.0",
 ]
 requires-python = ">=3.8"
 readme = "README.md"
