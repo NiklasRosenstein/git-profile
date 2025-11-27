@@ -21,13 +21,13 @@ Repository = "https://github.com/NiklasRosenstein/git-profile"
 Issues = "https://github.com/NiklasRosenstein/git-profile/issues"
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["uv_build>=0.9.11,<0.10.0"]
+build-backend = "uv_build"
 
-[tool.pdm]
-distribution = true
+[tool.uv]
+build-backend.module-name = "git_profile_command"
 
-[tool.pdm.dev-dependencies]
+[dependency-groups]
 dev = [
     "ruff>=0.4.7",
     "mypy>=1.10.0",

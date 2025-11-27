@@ -12,10 +12,10 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.x"]
     steps:
     - uses: actions/checkout@v4
+    - uses: astral-sh/setup-uv@v5
     - uses: actions/setup-python@v5
       with: { python-version: "${{ matrix.python-version }}" }
-    - run: pipx install pdm
-    - run: pdm install
-    - run: pdm run mypy .
-    - run: pdm run ruff check
-    - run: pdm run ruff format --check
+    - run: uv sync
+    - run: uv run mypy .
+    - run: uv run ruff check
+    - run: uv run ruff format --check
